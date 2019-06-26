@@ -18,24 +18,21 @@ rankhospital <- function(state, outcome, num = "best"){
     names(state_outcome) <- c("Hospital.Name", "State", "Heart Attack", "Heart Failure", 
                               "Pneumonia")
     alpha_state_outcome <- state_outcome[order(state_outcome$Hospital.Name),]
-
-    if(num == "best"){
-        min_idx <- which.min(suppressWarnings(as.numeric(alpha_state_outcome[[cap_outcome]])))
-        return(alpha_state_outcome$Hospital.Name[min_idx])
-    }
-    else if(num == "worst"){
-        max_idx <- which.max(suppressWarnings(as.numeric(alpha_state_outcome[[cap_outcome]])))
-        return(alpha_state_outcome$Hospital.Name[max_idx])
-    }
-    else if(num > sum(!is.na(alpha_state_outcome[[cap_outcome]]))){
-        return(message("NA"))
-    }
-    else{
-        ## Rank by the outcome
-        ## Note: the original class is character, and 10.0 is shown to be smaller than numbers 
-        ## beleow 10.0.
-        ranked_alpha_state_outcome <- alpha_state_outcome[order(suppressWarnings(as.numeric(
-            alpha_state_outcome[[cap_outcome]]))),]
-        return(ranked_alpha_state_outcome$Hospital.Name[num])
-    }
+    
+    ## Convert the class of character to numeric
+    alpha_state_outcome[[cap_outcome]] <-
+        suppressWarnings(as.numeric(alpha_state_outcome[[cap_outcome]]))
+    
+    ## Sort by the outcome, meanwhile drop NA values
+    ranked_alpha_state_outcome <- 
+        alpha_state_outcome[order(alpha_state_outcome[[cap_outcome]], na.last = NA),]
+    
+    if(num == "best"){rank_num <- 1}
+    else if(num == "worst"){rank_num <- nrow(ranked_alpha_state_outcome)}
+    
+    ## Use return() to exit the function
+    else if(num > nrow(ranked_alpha_state_outcome)){return(message("NA"))}
+    else{rank_num <- num} 
+    
+    return(ranked_alpha_state_outcome$Hospital.Name[rank_num])
 }
